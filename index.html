@@ -1,11 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="pt-BR">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechFlow</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TechFlow • Dashboard</title>
+    <script>
+        (() => {
+            let p = 'system';
+            try { p = localStorage.getItem('techflow-theme') || 'system'; } {}
+            if (p === 'dark' || (p === 'system' && matchMedia('(prefers-color-scheme: dark)').matches))
+                document.documentElement.classList.add('dark');
+        })();
+    </script>
+    <link rel="stylesheet" href="/css/styles.css" />
 </head>
-<body>
+
+<body class="bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-100">
+    <div id="overlay" class="fixed inset-0 z-30 hidden bg-black/50 lg:hidden"></div>
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-64 -translate-x-full flex-col border-r border-slate-200 bg-white p-4 transition-transform duration-300 ease-in-out lg:translate-x-0 dark:border-slate-800 dark:bg-slate-900">
+        <div class="mb-6 flex items-center justify-between">
+            <a href="#" class="text-xl font-bold text-indigo-600 dark:text-indigo-400">TechFlow</a>
+            <button id="closeSidebar" aria-label="Fechar menu" class="rounded-lg p-2 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 active:scale-95 lg:hidden dark:hover:bg-slate-800">✕</button>
+        </div>
+        <nav class="flex flex-col gap-1 text-sm font-medium">
+            <a href="#" class="flex items-center gap-3 rounded-lg bg-indigo-50 px-3 py-2 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">Dashboard</a>
+            <a href="#projetos" class="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 active:bg-slate-200 dark:hover:bg-slate-800 dark:active:bg-slate-700">Projetos</a>
+            <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 active:bg-slate-200 dark:hover:bg-slate-800 dark:active:bg-slate-700">Equipes</a>
+            <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 active:bg-slate-200 dark:hover:bg-slate-800 dark:active:bg-slate-700">Tarefas</a>
+            <a href="#" class="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 active:bg-slate-200 dark:hover:bg-slate-800 dark:active:bg-slate-700">Configurações</a>
+        </nav>
+    </aside>
+    <!-- NAVBAR -->
+    <header
+        class="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur lg:pl-64 dark:border-slate-800 dark:bg-slate-900/80">
+        <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+            <div class="flex flex-1 items-center gap-3">
+                <button id="openSidebar" aria-label="Abrir menu" class="rounded-lg p-2 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 active:scale-95 lg:hidden dark:hover:bg-slate-800">☰</button>
+                <input id="search" type="search" placeholder="Pesquisar projetos..." class="field max-w-md" />
+            </div>
     
-</body>
+            <div class="flex items-center gap-3">
+                <fieldset class="flex rounded-lg border border-slate-200 p-0.5 text-xs font-medium dark:border-slate-700" aria-label="Tema">
+                    <label class="cursor-pointer"><input type="radio" name="theme" value="light" class="peer sr-only" /><span class="block rounded-md px-2.5 py-1.5 transition peer-checked:bg-indigo-600 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500">Light</span></label>
+                    <label class="cursor-pointer"><input type="radio" name="theme" value="dark" class="peer sr-only" /><span class="block rounded-md px-2.5 py-1.5 transition peer-checked:bg-indigo-600 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500">Dark</span></label>
+                    <label class="cursor-pointer"><input type="radio" name="theme" value="system" class="peer sr-only" /><span class="block rounded-md px-2.5 py-1.5 transition peer-checked:bg-indigo-600 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-indigo-500">System</span></label>
+                </fieldset>
+    
+                <!-- Usuário + dropdown -->
+                <div class="relative">
+                    <button id="userBtn" aria-haspopup="true" aria-expanded="false" class="flex items-center gap-2 rounded-lg px-2 py-1.5 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 active:scale-95 dark:hover:bg-slate-800">
+                        <span class="grid size-8 place-items-center rounded-full bg-indigo-600 text-sm font-semibold text-white">S </span>
+                        <span class="hidden text-left text-sm leading-tight md:block"><span class="block font-medium">Samuel </span><span class="block text-xs text-slate-500 dark:text-slate-400">Gerente de projetos</span></span>
+                    </button>
+                    <div id="userMenu" class="absolute right-0 mt-2 hidden w-48 rounded-xl border border-slate-200 bg-white p-1 text-sm shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                        <a href="#" class="block rounded-lg px-3 py-2 transition hover:bg-slate-100 dark:hover:bg-slate-700">Meu perfil</a>
+                        <a href="#" class="block rounded-lg px-3 py-2 transition hover:bg-slate-100 dark:hover:bg-slate-700">Preferências</a>
+                        <a href="#" class="block rounded-lg px-3 py-2 text-red-600 transition hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10">Sair</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="space-y-8 p-4 sm:p-6 lg:pl-72 xl:pr-10 2xl:mx-auto 2xl:max-w-[1600px]">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h1 class="text-2xl font-bold">Visão geral</h1>
+                <p class="text-sm text-slate-500 dark:text-slate-400">Acompanhe projetos, equipes e indicadores da TechFlow.</p>
+            </div>
+            <div class="flex gap-2">
+                <button disabled class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700">Exportar(em breve)</button>
+                <button id="openModal" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition duration-200 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-95 dark:focus:ring-offset-slate-950">+Novo projeto</button>
+            </div>
+        </div>
+    
+    </main>
+    
+    <script type="module" src="/js/app.js"></script>
+</body>    
 </html>
