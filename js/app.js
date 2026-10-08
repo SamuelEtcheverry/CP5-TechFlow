@@ -4,6 +4,29 @@
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
+/* ---------- 1. TEMA (Light | Dark | System) ---------- */
+const THEME_KEY = 'techflow-theme';
+const mq = matchMedia('(prefers-color-scheme: dark)');
+
+function getThemePref() {
+  try { return localStorage.getItem(THEME_KEY) || 'system'; } catch { return 'system'; }
+}
+function applyTheme(pref) {
+  const dark = pref === 'dark' || (pref === 'system' && mq.matches);
+  document.documentElement.classList.toggle('dark', dark);
+}
+function setTheme(pref) {
+  try { localStorage.setItem(THEME_KEY, pref); } catch {}
+  applyTheme(pref);
+}
+
+const savedTheme = getThemePref();
+$(`input[name="theme"][value="${savedTheme}"]`).checked = true;
+applyTheme(savedTheme);
+$$('input[name="theme"]').forEach((r) => r.addEventListener('change', () => setTheme(r.value)));
+// No modo System, acompanha mudanças do sistema em tempo real
+mq.addEventListener('change', () => { if (getThemePref() === 'system') applyTheme('system'); });
+
 /* ---------- 2. SIDEBAR MOBILE ---------- */
 const sidebar = $('#sidebar');
 const overlay = $('#overlay');
