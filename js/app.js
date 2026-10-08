@@ -50,3 +50,100 @@ userBtn.addEventListener('click', (e) => {
   toggleUserMenu(userMenu.classList.contains('hidden'));
 });
 document.addEventListener('click', (e) => { if (!userMenu.contains(e.target)) toggleUserMenu(false); });
+
+/* ---------- 5. MODAL ---------- */
+const modal = $('#modal');
+const form = $('#projectForm');
+function openModal() {
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  $('#nome').focus();
+}
+function closeModal() {
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  resetForm();
+}
+$('#openModal').addEventListener('click', openModal);
+$('#closeModal').addEventListener('click', closeModal);
+$('#cancelModal').addEventListener('click', closeModal);
+modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  toggleUserMenu(false);
+  toggleSidebar(false);
+  if (!modal.classList.contains('hidden')) closeModal();
+});
+
+/* ---------- 6. VALIDAÇÃO DO FORMULÁRIO ---------- */
+const rules = {
+  nome: (v) => v.trim().length >= 3 || 'Informe ao menos 3 caracteres.',
+  responsavel: (v) => v.trim().length >= 3 || 'Informe o nome do responsável.',
+  categoria: (v) => v !== '' || 'Selecione uma categoria.',
+  prioridade: (v) => v !== '' || 'Selecione a prioridade.',
+  prazo: (v) => {
+    if (!v) return 'Informe o prazo.';
+    const hoje = new Date(); hoje.setHours(0, 0, 0, 0);
+    return new Date(v + 'T00:00') >= hoje || 'O prazo não pode estar no passado.';
+  },
+  descricao: (v) => v.trim().length >= 10 || 'Descreva com ao menos 10 caracteres.',
+};
+
+function validateField(el) {
+  const msg = $('[data-msg]', el.parentElement);
+  const result = rules[el.name](el.value);
+  const ok = result === true;
+
+  el.classList.toggle('field-error', !ok);
+  el.classList.toggle('field-ok', ok);
+  el.setAttribute('aria-invalid', String(!ok));
+
+  msg.textContent = ok ? '✓ Tudo certo' : result;
+  msg.classList.remove('hidden');
+  msg.classList.toggle('text-emerald-600', ok);
+  msg.classList.toggle('dark:text-emerald-400', ok);
+  msg.classList.toggle('text-red-600', !ok);
+  msg.classList.toggle('dark:text-red-400', !ok);
+  return ok;
+}
+
+function resetForm() {
+  form.reset();
+  $$('.field', form).forEach((el) => {
+    el.classList.remove('field-error', 'field-ok');
+    el.removeAttribute('aria-invalid');
+  });
+  $$('[data-msg]', form).forEach((m) => m.classList.add('hidden'));
+  $('#formSuccess').classList.add('hidden');
+  $('#submitBtn').disabled = false;
+}
+
+const fields = $$('.field', form);
+fields.forEach((el) => {
+  el.addEventListener('blur', () => validateField(el));
+  el.addEventListener('input', () => { if (el.classList.contains('field-error')) validateField(el); });
+});
+
+form.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const results = fields.map(validateField);
+  if (results.includes(false)) {
+    fields[results.indexOf(false)].focus();
+    return;
+  }
+
+  // Sucesso: cria o card, atualiza o indicador e fecha o modal
+  const data = Object.fromEntries(new FormData(form));
+  const card = $('#cardTemplate').content.cloneNode(true);
+  $('[data-title]', card).textContent = data.nome;
+  $('[data-desc]', card).textContent = data.descricao;
+  $('[data-meta]', card).textContent = `👤 ${data.responsavel} • ${data.categoria} • ${data.prioridade} • 📅 ${data.prazo.split('-').reverse().join('/')}`;
+  $('#projectGrid').prepend(card);
+
+  const kpi = $('#kpi-ativos');
+  kpi.textContent = String(Number(kpi.textContent) + 1);
+
+  $('#formSuccess').classList.remove('hidden');
+  $('#submitBtn').disabled = true;
+  setTimeout(closeModal, 1200);
+});
