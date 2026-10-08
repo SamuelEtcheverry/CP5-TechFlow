@@ -51,6 +51,18 @@ userBtn.addEventListener('click', (e) => {
 });
 document.addEventListener('click', (e) => { if (!userMenu.contains(e.target)) toggleUserMenu(false); });
 
+/* ---------- 4. PESQUISA (filtra os cards) ---------- */
+$('#search').addEventListener('input', (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  let visible = 0;
+  $$('[data-card]').forEach((card) => {
+    const match = card.textContent.toLowerCase().includes(q);
+    card.classList.toggle('hidden', !match);
+    if (match) visible++;
+  });
+  $('#noResults').classList.toggle('hidden', visible > 0);
+});
+
 /* ---------- 5. MODAL ---------- */
 const modal = $('#modal');
 const form = $('#projectForm');
